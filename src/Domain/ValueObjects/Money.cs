@@ -15,9 +15,9 @@ public class Money : ValueObject
 
     public string Currency { get; }
 
-    internal static Result<Money> Create(decimal value, string currency)
+    public static Result<Money> Create(decimal value, string currency)
     {
-        if (IsValidCurrency(currency))
+        if (!IsValidCurrency(currency))
         {
             return Result<Money>.Failure(new Error("Money.EmptyCurrency", "Currency cannot be null or empty."));
         }
@@ -30,14 +30,9 @@ public class Money : ValueObject
         return Result<Money>.Success(new Money(value, currency));
     }
 
-    internal static Result<Money> Zero(string currency)
+    public static Result<Money> Zero(string currency)
     {
-        if (!IsValidCurrency(currency))
-        {
-            return Result<Money>.Failure(new Error("Money.EmptyCurrency", "Currency cannot be null or empty."));
-        }
-
-        return Result<Money>.Success(new Money(0, currency));
+        return Create(0, currency);
     }
 
     protected override IEnumerable<object> GetAtomicValues()

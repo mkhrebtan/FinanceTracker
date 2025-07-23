@@ -2,8 +2,6 @@
 
 public abstract class ValueObject : IEquatable<ValueObject>
 {
-    protected abstract IEnumerable<object> GetAtomicValues();
-
     public override bool Equals(object? obj)
     {
         return obj is ValueObject other && ValuesAreEqual(other);
@@ -19,6 +17,8 @@ public abstract class ValueObject : IEquatable<ValueObject>
         return GetAtomicValues()
             .Aggregate(default(int), HashCode.Combine);
     }
+
+    protected abstract IEnumerable<object> GetAtomicValues();
 
     private bool ValuesAreEqual(ValueObject other)
     {
