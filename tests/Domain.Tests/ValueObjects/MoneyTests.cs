@@ -1,11 +1,12 @@
-﻿using Domain.ValueObjects;
+﻿using Domain.Shared;
+using Domain.ValueObjects;
 
 namespace Domain.Tests.ValueObjects;
 
 public class MoneyTests
 {
     [Theory]
-    [MemberData(nameof(MoneyData.ValidMoneyData), MemberType = typeof(MoneyData))]
+    [MemberData(nameof(ValidMoneyData))]
     public void Create_WithValidValues_ShouldReturnSuccess(decimal amount, string currency) 
     {
         var result = Money.Create(amount, currency);
@@ -16,29 +17,27 @@ public class MoneyTests
         Assert.Equal(currency, result.Value.Currency);
     }
 
-    [Fact]
-    public void Create_WithNegativeValue_ShouldReturnFailure()
+    [Theory]
+    [MemberData(nameof(InvalidMoneyData))]
+    public void Create_WithInvalidValues_ShouldReturnFailure(decimal amount, string currency)
     {
-        var result = Money.Create(-100.00m, "USD");
+        var result = Money.Create(amount, currency);
         Assert.True(result.IsFailure);
-        Assert.NotNull(result.Error);
+        Assert.NotEqual(result.Error, Error.None);
     }
 
-    [Fact]
-    public void Create_WithEmptyCurrency_ShouldReturnFailure()
+    public static TheoryData<decimal, string> ValidMoneyData => new()
     {
-        var result = Money.Create(100.00m, string.Empty);
-        Assert.True(result.IsFailure);
-        Assert.NotNull(result.Error);
-    }
-}
+        { 100.00m, "USD" },
+        { 50.50m, "EUR" },
+        { 0.00m, "GBP" },
+        { 9999.99m, "JPY" }
+    };
 
-public class MoneyData
-{
-    public static IEnumerable<object[]> ValidMoneyData()
+    public static TheoryData<decimal, string> InvalidMoneyData => new()
     {
-        yield return new object[] { 100.50m, "UAH" };
-        yield return new object[] { 200.00m, "USD" };
-        yield return new object[] { 0.00m, "EUR" };
-    }
+        { -50.00m, "USD" },
+        { 100.00m, string.Empty },
+        { 99.90m, null! },
+    };
 }
