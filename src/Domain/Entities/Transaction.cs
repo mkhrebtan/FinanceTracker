@@ -14,9 +14,13 @@ public abstract class Transaction : Entity
 
     public const int MaxDescriptionLength = 1000;
 
-    protected Transaction(Guid id)
+    protected Transaction(Guid id, Money amount, string category, DateTime date, string description)
         : base(id)
     {
+        Amount = amount;
+        Category = category;
+        Date = date;
+        Description = description;
     }
 
     public static DateTime MinDate => new DateTime(2000, 1, 1).ToUniversalTime();
@@ -36,7 +40,7 @@ public abstract class Transaction : Entity
 
     protected static bool IsValidDescription(string description)
     {
-        return description.Length <= MaxDescriptionLength;
+        return description is not null && description.Length <= MaxDescriptionLength;
     }
 
     protected static bool IsValidDate(DateTime date)
@@ -46,7 +50,7 @@ public abstract class Transaction : Entity
 
     protected static bool IsValidAmount(Money amount)
     {
-        return amount.Value > 0;
+        return amount is not null && amount.Value > 0;
     }
 
     protected static Result ValidateTransaction(Money amount, DateTime date, string category, string description)
@@ -68,7 +72,7 @@ public abstract class Transaction : Entity
 
         if (!IsValidDescription(description))
         {
-            return Result.Failure(new Error("Transaction.InvalidDescription", $"Description must not exceed {MaxDescriptionLength} characters."));
+            return Result.Failure(new Error("Transaction.InvalidDescription", $"Description must not be a nullable string and not exceed {MaxDescriptionLength} characters."));
         }
 
         return Result.Success();

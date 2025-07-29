@@ -6,7 +6,7 @@ namespace Domain.Entities;
 
 public class Account : AggregateRoot
 {
-    private HashSet<Transaction> _transactions = new();
+    private readonly HashSet<Transaction> _transactions = new();
 
     private Account(Guid id, Money balance)
         : base(id)
@@ -29,45 +29,45 @@ public class Account : AggregateRoot
         return Result<Account>.Success(new Account(Guid.NewGuid(), initialBalance.Value));
     }
 
-    public Result<Expense> AddExpense(Money amount, DateTime date, string category = Transaction.DefaultCategory, string description = Transaction.DefaultDescription)
+    public Result<Transaction> AddExpense(Money amount, DateTime date, string category = Transaction.DefaultCategory, string description = Transaction.DefaultDescription)
     {
-        Result<Expense> expenseResult = Expense.Create(amount, date, category, description);
+        Result<Transaction> expenseResult = Expense.Create(amount, date, category, description);
         if (expenseResult.IsFailure)
         {
             return expenseResult;
         }
 
-        Expense expense = expenseResult.Value;
+        Transaction expense = expenseResult.Value;
         Money expenseAmount = expense.Amount;
         Result<Money> newBalanceResult = Money.Create(Balance.Value - expenseAmount.Value, Balance.Currency);
         if (newBalanceResult.IsFailure)
         {
-            return Result<Expense>.Failure(newBalanceResult.Error);
+            return Result<Transaction>.Failure(newBalanceResult.Error);
         }
 
         _transactions.Add(expense);
         Balance = newBalanceResult.Value;
-        return Result<Expense>.Success(expense);
+        return Result<Transaction>.Success(expense);
     }
 
-    public Result<Income> AddIncome(Money amount, DateTime date, string category = Transaction.DefaultCategory, string description = Transaction.DefaultDescription)
+    public Result<Transaction> AddIncome(Money amount, DateTime date, string category = Transaction.DefaultCategory, string description = Transaction.DefaultDescription)
     {
-        Result<Income> incomeResult = Income.Create(amount, date, category, description);
+        Result<Transaction> incomeResult = Income.Create(amount, date, category, description);
         if (incomeResult.IsFailure)
         {
             return incomeResult;
         }
 
-        Income income = incomeResult.Value;
+        Transaction income = incomeResult.Value;
         Money incomeAmount = income.Amount;
         Result<Money> newBalanceResult = Money.Create(Balance.Value + incomeAmount.Value, Balance.Currency);
         if (newBalanceResult.IsFailure)
         {
-            return Result<Income>.Failure(newBalanceResult.Error);
+            return Result<Transaction>.Failure(newBalanceResult.Error);
         }
 
         _transactions.Add(income);
         Balance = newBalanceResult.Value;
-        return Result<Income>.Success(income);
+        return Result<Transaction>.Success(income);
     }
 }

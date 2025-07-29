@@ -6,23 +6,19 @@ namespace Domain.Entities;
 public sealed class Income : Transaction
 {
     private Income(Guid id, Money amount, string category, DateTime date, string description)
-        : base(id)
+        : base(id, amount, category, date, description)
     {
-        Amount = amount;
-        Category = category;
-        Date = date;
-        Description = description;
     }
 
-    public static Result<Income> Create(Money amount, DateTime date, string category = DefaultCategory, string description = "")
+    public static Result<Transaction> Create(Money amount, DateTime date, string category = DefaultCategory, string description = DefaultDescription)
     {
         var validationResult = ValidateTransaction(amount, date, category, description);
         if (!validationResult.IsSuccess)
         {
-            return Result<Income>.Failure(validationResult.Error);
+            return Result<Transaction>.Failure(validationResult.Error);
         }
 
         var income = new Income(Guid.NewGuid(), amount, category, date, description);
-        return Result<Income>.Success(income);
+        return Result<Transaction>.Success(income);
     }
 }
