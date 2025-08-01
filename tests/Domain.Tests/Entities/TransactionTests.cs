@@ -71,6 +71,10 @@ public abstract class TransactionTests
         var result = Factory(money, date, category, description);
         Assert.True(result.IsSuccess);
         Assert.NotNull(result.Value);
+        Assert.Equal(amount, result.Value.Amount.Value);
+        Assert.Equal(date, result.Value.Date);
+        Assert.Equal(category, result.Value.Category);
+        Assert.Equal(description, result.Value.Description);
     }
 
     #region Data
