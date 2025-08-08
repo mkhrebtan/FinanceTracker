@@ -1,4 +1,5 @@
 ﻿using Domain.Abstraction;
+using Domain.Abstraction.Interfaces;
 using Domain.Shared;
 using Domain.ValueObjects;
 
@@ -41,50 +42,51 @@ public class Account : AggregateRoot
 
     public Result<Transaction> AddExpense(Money amount, DateTime date, string category = Transaction.DefaultCategory, string description = Transaction.DefaultDescription)
     {
-        if(!IsValidCurrency(amount.Currency))
-        {
-            return Result<Transaction>.Failure(new Error("Account.InvalidCurrency", "The currency of the amount does not match the account's currency."));
-        }
-
-        Result<Transaction> expenseResult = Expense.Create(amount, date, category, description);
-        if (expenseResult.IsFailure)
-        {
-            return expenseResult;
-        }
-
-        Result<Money> newBalanceResult = Money.Create(Balance.Value - expenseResult.Value.Amount.Value, Balance.Currency);
-        if (newBalanceResult.IsFailure)
-        {
-            return Result<Transaction>.Failure(newBalanceResult.Error);
-        }
-
-        _transactions.Add(expenseResult.Value);
-        Balance = newBalanceResult.Value;
-        return Result<Transaction>.Success(expenseResult.Value);
+        return AddTransaction<Expense>(amount, date, category, description);
     }
 
     public Result<Transaction> AddIncome(Money amount, DateTime date, string category = Transaction.DefaultCategory, string description = Transaction.DefaultDescription)
     {
+        return AddTransaction<Income>(amount, date, category, description);
+    }
+
+    private Result<Transaction> AddTransaction<T>(Money amount, DateTime date, string category, string description)
+        where T : Transaction, ICreatableTransaction
+    {
+        if (amount is null)
+        {
+            return Result<Transaction>.Failure(new Error("Account.AmountNull", "Amount cannot be null."));
+        }
+
         if (!IsValidCurrency(amount.Currency))
         {
             return Result<Transaction>.Failure(new Error("Account.InvalidCurrency", "The currency of the amount does not match the account's currency."));
         }
 
-        Result<Transaction> incomeResult = Income.Create(amount, date, category, description);
-        if (incomeResult.IsFailure)
+        Result<Money> newBalanceResult = Money.Zero(Balance.Currency);
+        if (typeof(T) == typeof(Expense))
         {
-            return incomeResult;
+            newBalanceResult = Money.Create(Balance.Value - amount.Value, Balance.Currency);
+        }
+        else if (typeof(T) == typeof(Income))
+        {
+            newBalanceResult = Money.Create(Balance.Value + amount.Value, Balance.Currency);
         }
 
-        Result<Money> newBalanceResult = Money.Create(Balance.Value + incomeResult.Value.Amount.Value, Balance.Currency);
         if (newBalanceResult.IsFailure)
         {
             return Result<Transaction>.Failure(newBalanceResult.Error);
         }
 
-        _transactions.Add(incomeResult.Value);
+        Result<Transaction> transactionResult = T.Create(amount, date, category, description);
+        if (transactionResult.IsFailure)
+        {
+            return transactionResult;
+        }
+
         Balance = newBalanceResult.Value;
-        return Result<Transaction>.Success(incomeResult.Value);
+        _transactions.Add(transactionResult.Value);
+        return transactionResult;
     }
 
     private bool IsValidCurrency(string currency)

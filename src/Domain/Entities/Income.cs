@@ -1,16 +1,17 @@
-﻿using Domain.Shared;
+﻿using Domain.Abstraction.Interfaces;
+using Domain.Shared;
 using Domain.ValueObjects;
 
 namespace Domain.Entities;
 
-public sealed class Income : Transaction
+public sealed class Income : Transaction, ICreatableTransaction
 {
     private Income(Guid id, Money amount, string category, DateTime date, string description)
         : base(id, amount, category, date, description)
     {
     }
 
-    public static Result<Transaction> Create(Money amount, DateTime date, string category = DefaultCategory, string description = DefaultDescription)
+    public static Result<Transaction> Create(Money amount, DateTime date, string category, string description)
     {
         var validationResult = ValidateTransaction(amount, date, category, description);
         if (!validationResult.IsSuccess)
