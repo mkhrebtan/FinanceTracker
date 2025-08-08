@@ -21,7 +21,7 @@ public class GenericRepository<TRoot> : IRepository<TRoot>
 
     public void Insert(TRoot root)
     {
-        _roots[root.Id] = root;
+        _roots.TryAdd(root.Id, root);
     }
 
     public void Update(TRoot root)

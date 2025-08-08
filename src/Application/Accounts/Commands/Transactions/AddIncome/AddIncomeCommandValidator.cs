@@ -2,7 +2,7 @@
 
 namespace Application.Accounts.Commands.Transactions.AddIncome;
 
-internal sealed class AddIncomeCommandValidator : AddTransactionCommandValidator
+public sealed class AddIncomeCommandValidator : AddTransactionCommandValidator
 {
     public AddIncomeCommandValidator()
         : base()

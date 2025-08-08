@@ -8,7 +8,7 @@ public static class DependencyInjection
 {
     public static void AddPersistence(this IServiceCollection services)
     {
-        services.AddScoped(typeof(IRepository<>), typeof(GenericRepository<>));
-        services.AddScoped<IAccountRepository, AccountRepository>();
+        services.AddSingleton(typeof(IRepository<>), typeof(GenericRepository<>));
+        services.AddSingleton<IAccountRepository, AccountRepository>();
     }
 }

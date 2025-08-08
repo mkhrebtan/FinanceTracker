@@ -2,7 +2,7 @@
 
 namespace Application.Accounts.Queries.GetAccountTransactions;
 
-internal sealed class GetAccountTransactionsQueryValidator : AbstractValidator<GetAccountTransactionsQuery>
+public sealed class GetAccountTransactionsQueryValidator : AbstractValidator<GetAccountTransactionsQuery>
 {
     public GetAccountTransactionsQueryValidator()
     {

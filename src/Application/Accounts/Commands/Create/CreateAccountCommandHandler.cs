@@ -4,14 +4,8 @@ using Domain.Entities;
 using Domain.Repos;
 using Domain.Shared;
 using Domain.ValueObjects;
-using FluentValidation;
 
 namespace Application.Accounts.Commands.Create;
-
-public sealed record CreateAccountCommand(string Currency, decimal? Amount = null)
-    : ICommand<AccountDto>
-{
-}
 
 internal sealed class CreateAccountCommandHandler : ICommandHandler<CreateAccountCommand, AccountDto>
 {
@@ -52,23 +46,5 @@ internal sealed class CreateAccountCommandHandler : ICommandHandler<CreateAccoun
             Balance = accountResult.Value.Balance.Value,
             Currency = accountResult.Value.Balance.Currency,
         }));
-    }
-}
-
-internal sealed class CreateAccountCommandValidator : AbstractValidator<CreateAccountCommand>
-{
-    public CreateAccountCommandValidator()
-    {
-        RuleFor(x => x.Currency)
-            .Cascade(CascadeMode.Stop)
-            .NotEmpty()
-            .WithMessage("Currency is required.")
-            .Length(3, 3)
-            .WithMessage("Currency must be exactly 3 characters long.");
-
-        RuleFor(x => x.Amount)
-            .GreaterThanOrEqualTo(0)
-            .When(x => x.Amount.HasValue)
-            .WithMessage("Amount must be greater than or equal to zero.");
     }
 }

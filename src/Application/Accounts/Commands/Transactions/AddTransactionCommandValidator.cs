@@ -3,7 +3,7 @@ using FluentValidation;
 
 namespace Application.Accounts.Commands.Transactions;
 
-internal abstract class AddTransactionCommandValidator : AbstractValidator<AddTransactionCommand>
+public abstract class AddTransactionCommandValidator : AbstractValidator<AddTransactionCommand>
 {
     protected AddTransactionCommandValidator()
     {
