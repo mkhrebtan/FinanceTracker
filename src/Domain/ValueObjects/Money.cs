@@ -24,7 +24,7 @@ public class Money : ValueObject
 
         if (value < 0)
         {
-            return Result<Money>.Failure(new Error("Money.NegativeValue", "Value cannot be negative."));
+            return Result<Money>.Failure(new Error("Money.NegativeValue", "Money amount cannot be negative."));
         }
 
         return Result<Money>.Success(new Money(value, currency));

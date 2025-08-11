@@ -63,7 +63,7 @@ public class Account : AggregateRoot
             return Result<Transaction>.Failure(new Error("Account.InvalidCurrency", "The currency of the amount does not match the account's currency."));
         }
 
-        Result<Money> newBalanceResult = Money.Zero(Balance.Currency);
+        Result<Money> newBalanceResult = default!;
         if (typeof(T) == typeof(Expense))
         {
             newBalanceResult = Money.Create(Balance.Value - amount.Value, Balance.Currency);
@@ -71,6 +71,10 @@ public class Account : AggregateRoot
         else if (typeof(T) == typeof(Income))
         {
             newBalanceResult = Money.Create(Balance.Value + amount.Value, Balance.Currency);
+        }
+        else
+        {
+            throw new InvalidOperationException($"Unsupported transaction type: {typeof(T).Name}");
         }
 
         if (newBalanceResult.IsFailure)
