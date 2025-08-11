@@ -53,6 +53,12 @@ dotnet_diagnostic.SA1313.severity = none
 # SA1009: Closing parenthesis should be spaced correctly
 dotnet_diagnostic.SA1009.severity = none
 
+# CA1848: Use the LoggerMessage delegates
+dotnet_diagnostic.CA1848.severity = none
+
+# SA1116: Split parameters should start on line after declaration
+dotnet_diagnostic.SA1116.severity = none
+
 [*.{cs,vb}]
 #### Naming styles ####
 
