@@ -1,3 +1,5 @@
+using Api.Extensions;
+using Api.Middlewares.Exceptions;
 using Application;
 using Application.Accounts.Commands.Create;
 using Application.Accounts.Commands.Transactions;
@@ -33,6 +35,9 @@ try
     builder.Services.AddSerilog((services, lc) => lc
         .ReadFrom.Configuration(builder.Configuration));
 
+    builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+    builder.Services.AddProblemDetails();
+
     var app = builder.Build();
 
     if (app.Environment.IsDevelopment())
@@ -56,12 +61,14 @@ try
     app.MapGet("/accounts/{accountId}/transactions", async (
         Guid accountId,
         IQueryHandler<GetAccountTransactionsQuery, IReadOnlyCollection<TransactionDto>> queryHandler,
-        IValidator<GetAccountTransactionsQuery> validator) =>
+        IValidator<GetAccountTransactionsQuery> validator,
+        ILogger<GetAccountTransactionsQuery> logger) =>
     {
         var request = new GetAccountTransactionsQuery(accountId);
         var validationResult = await validator.ValidateAsync(request);
         if (!validationResult.IsValid)
         {
+            logger.LogValidationFailure<GetAccountTransactionsQuery, IReadOnlyCollection<TransactionDto>>(validationResult, request);
             return Results.ValidationProblem(validationResult.ToDictionary());
         }
 
@@ -72,11 +79,13 @@ try
     app.MapPost("/accounts", async (
         CreateAccountCommand request,
         ICommandHandler<CreateAccountCommand, AccountDto> commandHandler,
-        IValidator<CreateAccountCommand> validator) =>
+        IValidator<CreateAccountCommand> validator,
+        ILogger<CreateAccountCommand> logger) =>
     {
         var validationResult = await validator.ValidateAsync(request);
         if (!validationResult.IsValid)
         {
+            logger.LogValidationFailure(validationResult, request);
             return Results.ValidationProblem(validationResult.ToDictionary());
         }
 
@@ -88,7 +97,8 @@ try
         Guid accountId,
         AddIncomeCommand request,
         ICommandHandler<AddIncomeCommand, TransactionDto> commandHandler,
-        IValidator<AddTransactionCommand> validator) =>
+        IValidator<AddTransactionCommand> validator,
+        ILogger<AddIncomeCommand> logger) =>
     {
         if (accountId != request.AccountId)
         {
@@ -98,6 +108,7 @@ try
         var validationResult = await validator.ValidateAsync(request);
         if (!validationResult.IsValid)
         {
+            logger.LogValidationFailure(validationResult, request);
             return Results.ValidationProblem(validationResult.ToDictionary());
         }
 
@@ -109,7 +120,8 @@ try
         Guid accountId,
         AddExpenseCommand request,
         ICommandHandler<AddExpenseCommand, TransactionDto> commandHandler,
-        IValidator<AddTransactionCommand> validator) =>
+        IValidator<AddTransactionCommand> validator,
+        ILogger<AddExpenseCommand> logger) =>
     {
         if (accountId != request.AccountId)
         {
@@ -119,6 +131,7 @@ try
         var validationResult = await validator.ValidateAsync(request);
         if (!validationResult.IsValid)
         {
+            logger.LogValidationFailure(validationResult, request);
             return Results.ValidationProblem(validationResult.ToDictionary());
         }
 
@@ -127,8 +140,9 @@ try
     });
 
     app.UseSerilogRequestLogging();
+    app.UseExceptionHandler();
 
-    app.Run();
+    await app.RunAsync();
 }
 catch (Exception ex)
 {
@@ -136,5 +150,5 @@ catch (Exception ex)
 }
 finally
 {
-    Log.CloseAndFlush();
+    await Log.CloseAndFlushAsync();
 }
